@@ -2,11 +2,11 @@ name: Update Bin Calendar
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs every night at midnight
-  workflow_dispatch: # Allows you to run it manually to test
+    - cron: '0 0 * * *' # Runs at midnight
+  workflow_dispatch: # Allows you to trigger it manually
 
 permissions:
-  contents: write # Essential: Allows the script to save the .ics file back to your repo
+  contents: write # Essential for the bot to save the bins.ics file
 
 jobs:
   build:
@@ -26,7 +26,7 @@ jobs:
 
       - name: Run bin scraper
         run: |
-          # We call the module directly to ensure it loads correctly
+          # The tool is now run as a package directly
           python3 -m uk_bin_collection.uk_bin_collection EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" -o bins.ics
 
       - name: Commit and push changes
