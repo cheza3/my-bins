@@ -18,10 +18,10 @@ jobs:
           python-version: '3.10'
       - name: Install dependencies
         run: pip install uk_bin_collection
-      - name: Run bin scraper
+      - - name: Run bin scraper
         run: |
-          python3 -m uk_bin_collection.collect_data EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" > bin_data.json
-          python3 -m uk_bin_collection.bin_to_ics -i bin_data.json -o bins.ics
+          # Use the new way to call the tool as a package
+          uk_bin_collection EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" -o bins.ics
       - name: Commit and push changes
         run: |
           git config --global user.name 'BinBot'
