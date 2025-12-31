@@ -1,0 +1,31 @@
+name: Update Bin Calendar
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs every night at midnight
+  workflow_dispatch: # Allows you to run it manually to test
+
+permissions:
+  contents: write # Important: Gives the bot permission to save the file
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pip install uk_bin_collection
+      - name: Run bin scraper
+        run: |
+          python3 -m uk_bin_collection.collect_data EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" > bin_data.json
+          python3 -m uk_bin_collection.bin_to_ics -i bin_data.json -o bins.ics
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'BinBot'
+          git config --global user.email 'bot@github.com'
+          git add bins.ics
+          git commit -m "Update bin dates" || exit 0
+          git push
