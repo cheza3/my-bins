@@ -2,17 +2,18 @@ name: Update Bin Calendar
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs at midnight
-  workflow_dispatch: # Allows you to trigger it manually
+    - cron: '0 0 * * *'   # Daily at 00:00 UTC
+  workflow_dispatch:
 
 permissions:
-  contents: write # Essential for the bot to save the bins.ics file
+  contents: write
 
 jobs:
-  build:
+  update-bins:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -20,19 +21,28 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install Chromium
         run: |
-          pip install uk_bin_collection selenium
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
 
-      - name: Run bin scraper
+      - name: Install Python deps
         run: |
-          # The tool is now run as a package directly
-          python3 -m uk_bin_collection.uk_bin_collection EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" -o bins.ics
+          pip install uk_bin_collection selenium icalendar
 
-      - name: Commit and push changes
+      - name: Generate iCal file
+        env:
+          CHROME_BIN: /usr/bin/chromium-browser
         run: |
-          git config --global user.name 'BinBot'
-          git config --global user.email 'bot@github.com'
+          uk_bin_collection \
+            EastDunbartonshireCouncil \
+            "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540" \
+            -o bins.ics
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "BinBot"
+          git config user.email "bot@github.com"
           git add bins.ics
-          git commit -m "Update bin dates" || exit 0
+          git commit -m "Update bin calendar" || exit 0
           git push
