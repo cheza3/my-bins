@@ -1,27 +1,34 @@
 name: Update Bin Calendar
+
 on:
   schedule:
     - cron: '0 0 * * *' # Runs every night at midnight
   workflow_dispatch: # Allows you to run it manually to test
 
 permissions:
-  contents: write # Important: Gives the bot permission to save the file
+  contents: write # Essential: Allows the script to save the .ics file back to your repo
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+
       - name: Install dependencies
-        run: pip install uk_bin_collection
-      - - name: Run bin scraper
         run: |
-          # Use the new way to call the tool as a package
-          uk_bin_collection EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" -o bins.ics
+          pip install uk_bin_collection selenium
+
+      - name: Run bin scraper
+        run: |
+          # We call the module directly to ensure it loads correctly
+          python3 -m uk_bin_collection.uk_bin_collection EastDunbartonshireCouncil "https://www.eastdunbarton.gov.uk/services/a-z-of-services/bins-waste-and-recycling/bins-and-recycling/collections/?uprn=132020540&m=CfDJ8NH03gsfdeVFlP61mROFUWd8FCFwfatyzh3TGarEg5KiJlVT5WYMBNh79GvydN8UaJTvs7Fp-qSOgBdkD8tq__iLes7ad0kP9wQtbpShz7GWSjmYi5oJSZVZaDBMBmucZ6XnhYahkVZ1z6tbe8eg0GE" -o bins.ics
+
       - name: Commit and push changes
         run: |
           git config --global user.name 'BinBot'
